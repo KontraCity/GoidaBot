@@ -29,7 +29,7 @@ namespace ConfigConst
         constexpr const char* Ids = "ids";
         constexpr const char* Admins = "admins";
         constexpr const char* Targets = "targets";
-        constexpr const char* GifQuery = "gif_query";
+        constexpr const char* GifQueries = "gif_queries";
         constexpr const char* BotEnabled = "bot_enabled";
     }
 }
@@ -48,7 +48,7 @@ private:
     std::string m_telegramBotApiToken;
     std::vector<int64_t> m_adminIds;
     std::vector<int64_t> m_targetIds;
-    std::string m_gifQuery;
+    std::vector<std::string> m_gifQueries;
     bool m_botEnabled = true;
 
 public:
@@ -99,11 +99,11 @@ public:
         return std::find(m_targetIds.begin(), m_targetIds.end(), id) != m_targetIds.end();
     }
 
-    /// @brief Get GIF query
-    /// @return GIF query
-    inline const std::string& gifQuery() const
+    /// @brief Get GIF queries
+    /// @return GIF queries
+    inline const std::vector<std::string>& gifQueries() const
     {
-        return m_gifQuery;
+        return m_gifQueries;
     }
 
     /// @brief Check if bot is enabled

@@ -60,28 +60,32 @@ void Bot::onAnyMessage(const TgBot::Message::Ptr message)
         static std::vector<std::string> results;
         if (results.empty())
         {
-            try
+            for (const std::string& query : m_config->gifQueries())
             {
-                results = Tenor::Search(m_config->gifQuery());
-                if (results.empty())
+                try
                 {
-                    m_logger.error(
-                        "@{}: \"{}\": Couldn't find any GIFs",
-                        message->from->username, message->text
+                    std::vector<std::string> queryResults = Tenor::Search(query);
+                    results.insert(results.end(), queryResults.begin(), queryResults.end());
+                }
+                catch (const std::runtime_error& error)
+                {
+                    m_logger.warn(
+                        "@{}: \"{}\": Couldn't search for GIFs with query \"{}\": \"{}\"",
+                        message->from->username, message->text, query, error.what()
                     );
-                    return;
                 }
             }
-            catch (const std::runtime_error& error)
+            
+            if (results.empty())
             {
                 m_logger.error(
-                    "@{}: \"{}\": Couldn't search for GIFs: \"{}\"",
-                    message->from->username, message->text, error.what()
+                    "@{}: \"{}\": Couldn't find any GIFs",
+                    message->from->username, message->text
                 );
                 return;
             }
         }
-        
+
         m_logger.info("@{}: \"{}\": Replying with random GIF", message->from->username, message->text);
         getApi().sendAnimation(message->chat->id, results[Utility::Random(0, results.size() - 1)]);
     }).detach();
@@ -101,15 +105,22 @@ Bot::Bot(const Config::Pointer& config)
 void Bot::start()
 {
     TgBot::TgLongPoll poll(*this);
+    m_logger.info("Ready: logged in as @{}", getApi().getMe()->username);
+
     while (true)
     {
-        static bool readyMessageShown = false;
-        if (!readyMessageShown)
+        try
         {
-            m_logger.info("Ready: logged in as @{}", getApi().getMe()->username);
-            readyMessageShown = true;
+            poll.start();
         }
-        poll.start();
+        catch (const TgBot::TgException& error)
+        {
+            m_logger.error(
+                "Poll error: \"{}\" [code: {}]",
+                error.what(),
+                static_cast<size_t>(error.errorCode)
+            );
+        }
     }
 }
 

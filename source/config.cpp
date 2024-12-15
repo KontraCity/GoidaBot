@@ -16,7 +16,7 @@ void Config::GenerateSampleFile()
     json configJson;
     configJson[Objects::TelegramBotApiToken] = "Enter Telegram bot API token here";
     configJson[Objects::Ids] = idsObject;
-    configJson[Objects::GifQuery] = "test";
+    configJson[Objects::GifQueries] = std::vector<std::string>();
     configJson[Objects::BotEnabled] = true;
     configFile << configJson.dump(4) << '\n';
 }
@@ -33,7 +33,7 @@ Config::Config()
         m_telegramBotApiToken = configJson.at(Objects::TelegramBotApiToken);
         m_adminIds = configJson.at(Objects::Ids).at(Objects::Admins).get<std::vector<int64_t>>();
         m_targetIds = configJson.at(Objects::Ids).at(Objects::Targets).get<std::vector<int64_t>>();
-        m_gifQuery = configJson.at(Objects::GifQuery);
+        m_gifQueries = configJson.at(Objects::GifQueries).get<std::vector<std::string>>();
         m_botEnabled = configJson.at(Objects::BotEnabled);
     }
     catch (const json::exception&)
@@ -55,7 +55,7 @@ void Config::save()
     json configJson;
     configJson[Objects::TelegramBotApiToken] = m_telegramBotApiToken;
     configJson[Objects::Ids] = idsObject;
-    configJson[Objects::GifQuery] = m_gifQuery;
+    configJson[Objects::GifQueries] = m_gifQueries;
     configJson[Objects::BotEnabled] = m_botEnabled;
     configFile << configJson.dump(4) << '\n';
 }
